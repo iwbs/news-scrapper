@@ -1,32 +1,36 @@
 import requests
 import time
 import json
+import os.path
 from bs4 import BeautifulSoup
 from pathlib import Path
 
 
 ROOT_FOLDER = 'ftchinese'
-CAT = [{'name': 'stock', 'url': 'http://www.ftchinese.com/channel/stock.html'},
-       {'name': 'forex', 'url': 'http://www.ftchinese.com/channel/forex.html'},
-       {'name': 'bond', 'url': 'http://www.ftchinese.com/channel/bond.html'},
-       {'name': 'commodity', 'url': 'http://www.ftchinese.com/channel/commodity.html'}]
+categories = [
+    {'name': 'stock', 'url': 'http://www.ftchinese.com/channel/stock.html'},
+    {'name': 'forex', 'url': 'http://www.ftchinese.com/channel/forex.html'},
+    {'name': 'bond', 'url': 'http://www.ftchinese.com/channel/bond.html'},
+    {'name': 'commodity', 'url': 'http://www.ftchinese.com/channel/commodity.html'}
+]
 DOMAIN = 'http://www.ftchinese.com'
-STOCK_URL = 'http://www.ftchinese.com/channel/stock.html'
 ARTICLE_URL_SUFFIX = '/ce?ccode=LanguageSwitch&archive'
+PAGE_LIMIT = 20  # old articles may not bilingual
+SLEEP_SEC = 2
 
-Path(ROOT_FOLDER).mkdir(parents=True, exist_ok=True)
+pageNum = 1
+totalPage = 1
 
-index = requests.get(STOCK_URL)
 
-if index.status_code == 200:
-    index_soup = BeautifulSoup(index.text, 'html.parser')
+def genJSON(text, folderPath, getTotalPage=False):
+    global totalPage
+    index_soup = BeautifulSoup(text, 'html.parser')
     articles = index_soup.find_all('a', class_='image')
     for s in articles:
         article_link = s.get('href')
         prefix = article_link.split('?', 1)[0]
         art_id = prefix.split('/')[2]
         target_link = prefix + ARTICLE_URL_SUFFIX
-
         art = requests.get(DOMAIN + target_link)
         if art.status_code == 200:
             art_soup = BeautifulSoup(art.text, 'html.parser')
@@ -47,8 +51,31 @@ if index.status_code == 200:
                 'en': en_ary,
                 'cn': cn_ary
             }
-            with open(art_id + '.json', 'w', encoding='utf8') as json_file:
+            fullPath = os.path.join(folderPath, art_id + ".json")
+            with open(fullPath, 'w', encoding='utf8') as json_file:
                 json.dump(output, json_file, ensure_ascii=False)
-
+            print(f"{fullPath} created")
         # don't want to flood the website
-        time.sleep(1)
+        time.sleep(SLEEP_SEC)
+    print(f"[{c['name']}] page {pageNum} finished")
+
+    if getTotalPage:
+        pageination_anchors = index_soup.select('div.pagination-inner > a')
+        totalPage = int(pageination_anchors[-2]['href'].split('=')[1])
+
+
+# start scrapper
+Path(ROOT_FOLDER).mkdir(parents=True, exist_ok=True)
+for c in categories:
+    folderPath = os.path.join(ROOT_FOLDER, c['name'])
+    Path(folderPath).mkdir(parents=True, exist_ok=True)
+    index = requests.get(c['url'])
+    if index.status_code == 200:
+        genJSON(index.text, folderPath, True)
+        pageNum += 1
+
+        while pageNum <= totalPage and pageNum <= PAGE_LIMIT:
+            nIndex = requests.get(f"{c['url']}?page={pageNum}")
+            if nIndex.status_code == 200:
+                genJSON(nIndex.text, folderPath)
+                pageNum += 1
