@@ -16,7 +16,7 @@ https://www.fidelity.com.hk/zh/insights-and-updates/investment-spotlight
 
 
 ## Other website candidates
-HKEA
+HKMA
 https://www.hkma.gov.hk/chi/
 
 HK GOV News
