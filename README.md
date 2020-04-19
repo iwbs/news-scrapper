@@ -1,5 +1,5 @@
 # news-scrapper
-
+Python scripts for fetching bilingual news data into JSON format
 
 ## Websites for source
 FTChinese (Done)
