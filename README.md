@@ -23,6 +23,9 @@ https://www.ubs.com/hk/tc/wealth-management/our-approach/marketnews.html
 Zeal
 https://www.zealasset.com/blog/cn/
 
+Pimco
+https://www.pimco.com.hk/zh-hk/insights/economic-and-market-commentary
+
 ## Other website candidates
 HKMA
 https://www.hkma.gov.hk/chi/
