@@ -11,7 +11,7 @@ https://cn.nytimes.com/business/
 JPMorgan
 https://am.jpmorgan.com/hk/en/asset-management/per/insights/market-insights/on-the-minds-of-investors/
 
-Fidelity (done)
+Fidelity (Done)
 https://www.fidelity.com.hk/zh/insights-and-updates/investment-spotlight
 
 FSM
@@ -25,6 +25,9 @@ https://www.zealasset.com/blog/cn/
 
 Pimco
 https://www.pimco.com.hk/zh-hk/insights/economic-and-market-commentary
+
+Allianzgi
+https://hk.allianzgi.com/zh-hk/retail/insights/insights-and-strategies
 
 ## Other website candidates
 HKMA
