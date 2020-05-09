@@ -26,7 +26,7 @@ ARTICLE_API_EN_PARAMS = '&languages=en%2Czh&language=en'
 SLEEP_SEC = 2
 
 
-def genJSON(text, folderPath, getTotalPage=False):
+def genJSON(text, folderPath):
     index = json.loads(text)
     for i in index:
         headline = i['content']['headline']
@@ -107,4 +107,4 @@ for c in categories:
     Path(folderPath).mkdir(parents=True, exist_ok=True)
     index = requests.get(f"{c['api']}")
     if index.status_code == 200:
-        genJSON(index.text, folderPath, True)
+        genJSON(index.text, folderPath)
