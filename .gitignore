@@ -3,4 +3,7 @@ nytimes
 fidelity
 pimco
 ubs
+allianz
+node_modules
+package-lock.json
 *.zip

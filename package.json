@@ -1,0 +1,22 @@
+{
+  "name": "news-scrapper",
+  "version": "1.0.0",
+  "description": "Python scripts for fetching bilingual news data into JSON format",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iwbs/news-scrapper.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iwbs/news-scrapper/issues"
+  },
+  "homepage": "https://github.com/iwbs/news-scrapper#readme",
+  "dependencies": {
+    "puppeteer": "^3.0.4"
+  }
+}

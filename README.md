@@ -17,7 +17,7 @@ https://www.fidelity.com.hk/zh/insights-and-updates/investment-spotlight
 FSM
 https://secure.fundsupermart.com.hk/fsm/article/lists?category=&tags=idea%20of%20the%20week&keyword=
 
-UBS
+UBS (Done)
 https://www.ubs.com/hk/tc/wealth-management/our-approach/marketnews.html
 
 Zeal
@@ -26,7 +26,7 @@ https://www.zealasset.com/blog/cn/
 Pimco
 https://www.pimco.com.hk/zh-hk/insights/economic-and-market-commentary
 
-Allianzgi
+Allianzgi (Done)
 https://hk.allianzgi.com/zh-hk/retail/insights/insights-and-strategies
 
 ## Other website candidates
