@@ -9,7 +9,6 @@ from urllib.parse import quote
 
 
 ROOT_FOLDER = 'ubs'
-INDEX_JSON_FOLDER = 'ubs_json'
 
 
 def genJSON(text):
@@ -42,33 +41,29 @@ def genJSON(text):
 
 
 Path(ROOT_FOLDER).mkdir(parents=True, exist_ok=True)
-for filename in os.listdir(INDEX_JSON_FOLDER):
-    with open(os.path.join(INDEX_JSON_FOLDER, filename), encoding="utf8") as f:
-        j = json.loads(f.read())
-        for a in j['documents']:
-            en_ary = []
-            cn_ary = []
-            f = a['fields']
-            folderPath = os.path.join(ROOT_FOLDER, f["as_contentTypes"][0])
-            Path(folderPath).mkdir(parents=True, exist_ok=True)
-            art_id = f["aem_pageID"][0]
-            zh_detail_url = f['targetOnlyContentUrl'][0]
-            print(zh_detail_url)
-            en_detail_url = zh_detail_url.replace('/tc/', '/en/')
-            zh_detail = requests.get(zh_detail_url)
-            if zh_detail.status_code == 200:
-                cn_ary = genJSON(zh_detail.text)
-            en_detail = requests.get(en_detail_url)
-            if en_detail.status_code == 200:
-                en_ary = genJSON(en_detail.text)
-            if len(cn_ary) == len(en_ary):
-                output = {
-                    'en': en_ary,
-                    'cn': cn_ary
-                }
-                fullPath = os.path.join(folderPath, art_id + ".json")
-                with open(fullPath, 'w', encoding='utf8') as json_file:
-                    json.dump(output, json_file, ensure_ascii=False, indent=4)
-                print(f"{fullPath} created")
-            else:
-                print("discarded")
+f = open("ubs.json", encoding="utf8")
+j = json.loads(f.read())
+for a in j['hrefs']:
+    en_ary = []
+    cn_ary = []
+    art_id = a.rsplit('/', 1)[1]
+    art_id = art_id.rsplit('.')[1]
+    zh_detail_url = a
+    en_detail_url = zh_detail_url.replace('/tc/', '/en/')
+    zh_detail = requests.get(zh_detail_url)
+    if zh_detail.status_code == 200:
+        cn_ary = genJSON(zh_detail.text)
+    en_detail = requests.get(en_detail_url)
+    if en_detail.status_code == 200:
+        en_ary = genJSON(en_detail.text)
+    if len(cn_ary) == len(en_ary):
+        output = {
+            'en': en_ary,
+            'cn': cn_ary
+        }
+        fullPath = os.path.join(ROOT_FOLDER, art_id + ".json")
+        with open(fullPath, 'w', encoding='utf8') as json_file:
+            json.dump(output, json_file, ensure_ascii=False, indent=4)
+        print(f"{fullPath} created")
+    else:
+        print(f"{art_id} discarded")
