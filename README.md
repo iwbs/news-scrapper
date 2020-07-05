@@ -20,7 +20,7 @@ https://www.ubs.com/hk/tc/wealth-management/our-approach/marketnews.html
 Zeal (Done)
 https://www.zealasset.com/blog/cn/
 
-Pimco
+Pimco (Done)
 https://www.pimco.com.hk/zh-hk/insights/economic-and-market-commentary
 
 Allianzgi (Done)
