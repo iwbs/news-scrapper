@@ -14,13 +14,10 @@ https://am.jpmorgan.com/hk/en/asset-management/per/insights/market-insights/on-t
 Fidelity (Done)
 https://www.fidelity.com.hk/zh/insights-and-updates/investment-spotlight
 
-FSM
-https://secure.fundsupermart.com.hk/fsm/article/lists?category=&tags=idea%20of%20the%20week&keyword=
-
 UBS (Done)
 https://www.ubs.com/hk/tc/wealth-management/our-approach/marketnews.html
 
-Zeal
+Zeal (Done)
 https://www.zealasset.com/blog/cn/
 
 Pimco
@@ -42,3 +39,5 @@ http://www.okread.info/news.php
 Morning star
 https://www.hk.morningstar.com/
 
+FSM
+https://secure.fundsupermart.com.hk/fsm/article/lists?category=&tags=idea%20of%20the%20week&keyword=
