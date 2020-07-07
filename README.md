@@ -8,7 +8,7 @@ https://www.ftchinese.com/channel/ce.html
 NYTimes (Done)
 https://cn.nytimes.com/business/
 
-JPMorgan
+JPMorgan (Done)
 https://am.jpmorgan.com/hk/en/asset-management/per/insights/market-insights/on-the-minds-of-investors/
 
 Fidelity (Done)

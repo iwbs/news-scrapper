@@ -7,14 +7,6 @@ from pathlib import Path
 
 
 ROOT_FOLDER = 'zeal'
-DOMAIN = 'https://www.zealasset.com'
-INDEx = 'https://www.zealasset.com/blog/en/'
-FROM_PAGE = 1
-TO_PAGE = 10
-SLEEP_SEC = 2
-
-pageNum = 1
-totalPage = 1
 next_article_link = ''
 
 ### Statistics ###
@@ -93,8 +85,6 @@ def genJSON(article_link, folderPath, getTotalPage=False):
 
 
 # start scrapper
-Path(ROOT_FOLDER).mkdir(parents=True, exist_ok=True)
-pageNum = FROM_PAGE
 folderPath = ROOT_FOLDER
 Path(folderPath).mkdir(parents=True, exist_ok=True)
 # get first article from index
