@@ -9,6 +9,12 @@ from pathlib import Path
 
 ROOT_FOLDER = 'allianz'
 
+### Statistics ###
+success_count = 0
+fail_count = 0
+##################
+
+
 def getContent(ele):
     ary = []
     for e in ele.contents:
@@ -57,6 +63,16 @@ for h in j['hrefs']:
         with open(fullPath, 'w', encoding='utf8') as json_file:
             json.dump(output, json_file, ensure_ascii=False, indent=4)
         print(f"{fullPath} created")
+        success_count += 1
     else:
         print(f"{art_id} discarded - cn len = {len(cn_ary)}, en len = {len(en_ary)}")
+        fail_count += 1
+
+output = {
+    'total': success_count + fail_count,
+    'success': success_count,
+    'fail': fail_count,
+}
+with open(f"{ROOT_FOLDER}_summary.json", 'w', encoding='utf8') as json_file:
+    json.dump(output, json_file, ensure_ascii=False, indent=4)
 

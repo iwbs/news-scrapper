@@ -103,6 +103,5 @@ if index.status_code == 200:
         'success': success_count,
         'fail': fail_count,
     }
-    fullPath = os.path.join(folderPath, "summary.json")
-    with open(fullPath, 'w', encoding='utf8') as json_file:
+    with open(f"{ROOT_FOLDER}_summary.json", 'w', encoding='utf8') as json_file:
         json.dump(output, json_file, ensure_ascii=False, indent=4)

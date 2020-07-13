@@ -25,8 +25,14 @@ ARTICLE_API_ZH_PARAMS = '&languages=zh%2Cen&language=zh'
 ARTICLE_API_EN_PARAMS = '&languages=en%2Czh&language=en'
 SLEEP_SEC = 2
 
+### Statistics ###
+success_count = 0
+fail_count = 0
+
 
 def genJSON(text, folderPath):
+    global success_count
+    global fail_count
     index = json.loads(text)
     for i in index:
         headline = i['content']['headline']
@@ -92,12 +98,13 @@ def genJSON(text, folderPath):
                         with open(fullPath, 'w', encoding='utf8') as json_file:
                             json.dump(output, json_file, ensure_ascii=False)
                         print(f"{fullPath} created")
+                        success_count += 1
                     else:
-                        print(
-                            f'Inner Array len not match! Discard article - {zh_headline}')
+                        print(f'Inner Array len not match! Discard article - {zh_headline}')
+                        fail_count += 1
                 else:
-                    print(
-                        f'Array len not match! Discard article - {zh_headline}')
+                    print(f'Array len not match! Discard article - {zh_headline}')
+                    fail_count += 1
             # time.sleep(SLEEP_SEC)
 
 
@@ -108,3 +115,11 @@ for c in categories:
     index = requests.get(f"{c['api']}")
     if index.status_code == 200:
         genJSON(index.text, folderPath)
+
+output = {
+    'total': success_count + fail_count,
+    'success': success_count,
+    'fail': fail_count,
+}
+with open(f"{ROOT_FOLDER}_summary.json", 'w', encoding='utf8') as json_file:
+    json.dump(output, json_file, ensure_ascii=False, indent=4)

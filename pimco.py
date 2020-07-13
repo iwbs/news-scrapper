@@ -9,6 +9,11 @@ from pathlib import Path
 ROOT_FOLDER = 'pimco'
 DOMAIN = 'https://www.pimco.com.hk'
 
+### Statistics ###
+success_count = 0
+fail_count = 0
+##################
+
 
 def genJSON(text, folderPath):
     ary = []
@@ -61,6 +66,16 @@ for r in j['results']:
             with open(fullPath, 'w', encoding='utf8') as json_file:
                 json.dump(output, json_file, ensure_ascii=False)
             print(f"{fullPath} created")
+            success_count += 1
         else:
             print(f"{r['DestinationUrl']} discarded")
+            fail_count += 1
+
+output = {
+    'total': success_count + fail_count,
+    'success': success_count,
+    'fail': fail_count,
+}
+with open(f"{ROOT_FOLDER}_summary.json", 'w', encoding='utf8') as json_file:
+    json.dump(output, json_file, ensure_ascii=False, indent=4)
 
