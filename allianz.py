@@ -5,6 +5,7 @@ import os.path
 from bs4 import BeautifulSoup
 from bs4.element import Tag, Comment
 from pathlib import Path
+from laser_checker import merge_sentence
 
 
 ROOT_FOLDER = 'allianz'
@@ -12,6 +13,7 @@ ROOT_FOLDER = 'allianz'
 ### Statistics ###
 success_count = 0
 fail_count = 0
+failed_links = []
 ##################
 
 
@@ -40,6 +42,7 @@ def genJSON(text):
         return []
 
 
+# start scrapper
 Path(ROOT_FOLDER).mkdir(parents=True, exist_ok=True)
 f = open("allianz.json", encoding="utf8")
 j = json.loads(f.read())
@@ -47,26 +50,42 @@ for h in j['hrefs']:
     cn_ary = []
     en_ary = []
     art_id = h.rsplit('/', 1)[1]
-    zh_detail = requests.get(h)
+    zh_path = h
+    zh_detail = requests.get(zh_path)
     if zh_detail.status_code == 200:
         cn_ary = genJSON(zh_detail.text)
     en_path = h.replace("/zh-hk/", "/en/")
     en_detail = requests.get(en_path)
     if en_detail.status_code == 200:
         en_ary = genJSON(en_detail.text)
-    if len(cn_ary) == len(en_ary) and len(cn_ary) > 1:
-        output = {
-            'en': en_ary,
-            'cn': cn_ary
-        }
+
+    output = {
+        'en': en_ary,
+        'cn': cn_ary
+    }
+
+    if len(en_ary) != len(cn_ary):
+        output = merge_sentence(output)
+        if len(output['en']) == len(output['cn']):
+            fullPath = os.path.join(ROOT_FOLDER, art_id + ".json")
+            with open(fullPath, 'w', encoding='utf8') as json_file:
+                json.dump(output, json_file, ensure_ascii=False, indent=4)
+            print(f"{fullPath} created")
+            success_count += 1
+        else:
+            fail_count += 1
+            failed_links.append({
+                'id': art_id,
+                'en': en_path,
+                'cn': zh_path,
+            })
+    else:
         fullPath = os.path.join(ROOT_FOLDER, art_id + ".json")
         with open(fullPath, 'w', encoding='utf8') as json_file:
             json.dump(output, json_file, ensure_ascii=False, indent=4)
         print(f"{fullPath} created")
         success_count += 1
-    else:
-        print(f"{art_id} discarded - cn len = {len(cn_ary)}, en len = {len(en_ary)}")
-        fail_count += 1
+
 
 output = {
     'total': success_count + fail_count,
@@ -76,3 +95,5 @@ output = {
 with open(f"{ROOT_FOLDER}_summary.json", 'w', encoding='utf8') as json_file:
     json.dump(output, json_file, ensure_ascii=False, indent=4)
 
+with open(f"{ROOT_FOLDER}_fail_list.json", 'w', encoding='utf8') as json_file:
+    json.dump(failed_links, json_file, ensure_ascii=False, indent=4)

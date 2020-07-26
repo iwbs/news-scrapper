@@ -6,6 +6,7 @@ import re
 from bs4 import BeautifulSoup
 from pathlib import Path
 from urllib.parse import quote
+from laser_checker import merge_sentence
 
 
 ROOT_FOLDER = 'fidelity'
@@ -23,11 +24,13 @@ ARTICLE_API_PATH = 'https://www.fidelity.com.hk/api/ce/content/Articles.json?ids
 ARTICLE_API_PARAMS = '&countries=hk&country=hk&channels=ce.private-investor%2Cce.professional-investor%2Cce.professional-investor.fund-buyer%2Cce.professional-investor.fund-seller&channel=ce.professional-investor.fund-buyer'
 ARTICLE_API_ZH_PARAMS = '&languages=zh%2Cen&language=zh'
 ARTICLE_API_EN_PARAMS = '&languages=en%2Czh&language=en'
-SLEEP_SEC = 2
+
 
 ### Statistics ###
 success_count = 0
 fail_count = 0
+failed_links = []
+##################
 
 
 def genJSON(text, folderPath):
@@ -71,43 +74,55 @@ def genJSON(text, folderPath):
                     if k == ' ' or k.text == '\xa0':
                         ec.remove(k)
 
-                if len(zc) == len(ec):
-                    for i in range(len(zc)):
-                        zh_c_soup = BeautifulSoup(
-                            zc[i].text, 'html.parser')
-                        zh_c_strings = list(zh_c_soup.strings)
-                        en_c_soup = BeautifulSoup(
-                            ec[i].text, 'html.parser')
-                        en_c_strings = list(en_c_soup.strings)
-                        if len(zh_c_strings) == len(en_c_strings):
-                            for j in range(len(zh_c_strings)):
-                                c = zh_c_strings[j].strip().replace(
-                                    '<br/>', '')
-                                if len(c) != 0:
-                                    cn_ary.append(c)
-                                c = en_c_strings[j].strip().replace(
-                                    '<br/>', '')
-                                if len(c) != 0:
-                                    en_ary.append(c)
-                    if len(cn_ary) == len(en_ary):
-                        output = {
-                            'en': en_ary,
-                            'cn': cn_ary
-                        }
+                for i in range(len(zc)):
+                    zh_c_soup = BeautifulSoup(
+                        zc[i].text, 'html.parser')
+                    zh_c_strings = list(zh_c_soup.strings)
+                    for j in range(len(zh_c_strings)):
+                        c = zh_c_strings[j].strip().replace(
+                            '<br/>', '')
+                        if len(c) != 0:
+                            cn_ary.append(c)
+                            
+                for i in range(len(ec)):
+                    en_c_soup = BeautifulSoup(
+                        ec[i].text, 'html.parser')
+                    en_c_strings = list(en_c_soup.strings)
+                    for j in range(len(en_c_strings)):
+                        c = en_c_strings[j].strip().replace(
+                            '<br/>', '')
+                        if len(c) != 0:
+                            en_ary.append(c)
+                            
+                output = {
+                    'en': en_ary,
+                    'cn': cn_ary
+                }
+
+                if len(en_ary) != len(cn_ary):
+                    output = merge_sentence(output)
+                    if len(output['en']) == len(output['cn']):
                         fullPath = os.path.join(folderPath, art_id + ".json")
                         with open(fullPath, 'w', encoding='utf8') as json_file:
-                            json.dump(output, json_file, ensure_ascii=False)
+                            json.dump(output, json_file, ensure_ascii=False, indent=4)
                         print(f"{fullPath} created")
                         success_count += 1
                     else:
-                        print(f'Inner Array len not match! Discard article - {zh_headline}')
                         fail_count += 1
+                        failed_links.append({
+                            'id': art_id,
+                            'en': f"{ARTICLE_API_PATH}{encoded_path}{ARTICLE_API_PARAMS}{ARTICLE_API_EN_PARAMS}",
+                            'cn': f"{ARTICLE_API_PATH}{encoded_path}{ARTICLE_API_PARAMS}{ARTICLE_API_ZH_PARAMS}",
+                        })
                 else:
-                    print(f'Array len not match! Discard article - {zh_headline}')
-                    fail_count += 1
-            # time.sleep(SLEEP_SEC)
+                    fullPath = os.path.join(folderPath, art_id + ".json")
+                    with open(fullPath, 'w', encoding='utf8') as json_file:
+                        json.dump(output, json_file, ensure_ascii=False, indent=4)
+                    print(f"{fullPath} created")
+                    success_count += 1
 
 
+# start scrapper
 Path(ROOT_FOLDER).mkdir(parents=True, exist_ok=True)
 for c in categories:
     folderPath = os.path.join(ROOT_FOLDER, c['name'])
@@ -123,3 +138,6 @@ output = {
 }
 with open(f"{ROOT_FOLDER}_summary.json", 'w', encoding='utf8') as json_file:
     json.dump(output, json_file, ensure_ascii=False, indent=4)
+
+with open(f"{ROOT_FOLDER}_fail_list.json", 'w', encoding='utf8') as json_file:
+    json.dump(failed_links, json_file, ensure_ascii=False, indent=4)

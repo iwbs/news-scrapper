@@ -6,6 +6,7 @@ import re
 from bs4 import BeautifulSoup
 from pathlib import Path
 from urllib.parse import quote
+from laser_checker import merge_sentence
 
 
 ROOT_FOLDER = 'ubs'
@@ -13,6 +14,7 @@ ROOT_FOLDER = 'ubs'
 ### Statistics ###
 success_count = 0
 fail_count = 0
+failed_links = []
 ##################
 
 
@@ -45,6 +47,7 @@ def genJSON(text):
     return ary
 
 
+# start scrapper
 Path(ROOT_FOLDER).mkdir(parents=True, exist_ok=True)
 f = open("ubs.json", encoding="utf8")
 j = json.loads(f.read())
@@ -61,19 +64,34 @@ for a in j['hrefs']:
     en_detail = requests.get(en_detail_url)
     if en_detail.status_code == 200:
         en_ary = genJSON(en_detail.text)
-    if len(cn_ary) == len(en_ary):
-        output = {
-            'en': en_ary,
-            'cn': cn_ary
-        }
+
+    output = {
+        'en': en_ary,
+        'cn': cn_ary
+    }
+
+    if len(en_ary) != len(cn_ary):
+        output = merge_sentence(output)
+        if len(output['en']) == len(output['cn']):
+            fullPath = os.path.join(ROOT_FOLDER, art_id + ".json")
+            with open(fullPath, 'w', encoding='utf8') as json_file:
+                json.dump(output, json_file, ensure_ascii=False, indent=4)
+            print(f"{fullPath} created")
+            success_count += 1
+        else:
+            fail_count += 1
+            failed_links.append({
+                'id': art_id,
+                'en': en_detail_url,
+                'cn': zh_detail_url,
+            })
+    else:
         fullPath = os.path.join(ROOT_FOLDER, art_id + ".json")
         with open(fullPath, 'w', encoding='utf8') as json_file:
             json.dump(output, json_file, ensure_ascii=False, indent=4)
         print(f"{fullPath} created")
         success_count += 1
-    else:
-        print(f"{art_id} discarded")
-        fail_count += 1
+
 
 output = {
     'total': success_count + fail_count,
@@ -82,3 +100,6 @@ output = {
 }
 with open(f"{ROOT_FOLDER}_summary.json", 'w', encoding='utf8') as json_file:
     json.dump(output, json_file, ensure_ascii=False, indent=4)
+
+with open(f"{ROOT_FOLDER}_fail_list.json", 'w', encoding='utf8') as json_file:
+    json.dump(failed_links, json_file, ensure_ascii=False, indent=4)

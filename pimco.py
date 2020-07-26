@@ -4,6 +4,7 @@ import json
 import os.path
 from bs4 import BeautifulSoup
 from pathlib import Path
+from laser_checker import merge_sentence
 
 
 ROOT_FOLDER = 'pimco'
@@ -12,6 +13,7 @@ DOMAIN = 'https://www.pimco.com.hk'
 ### Statistics ###
 success_count = 0
 fail_count = 0
+failed_links = []
 ##################
 
 
@@ -30,7 +32,8 @@ def genJSON(text, folderPath):
                     if article is not None:
                         p_ary = article.find_all('p')
                         for p in p_ary:
-                            ary.append(p.get_text())
+                            if p.get_text() != '':
+                                ary.append(p.get_text())
     return ary
 
 
@@ -44,6 +47,7 @@ for r in j['results']:
         folderPath = os.path.join(ROOT_FOLDER, r['Category'])
         Path(folderPath).mkdir(parents=True, exist_ok=True)
         zh_path = f"{DOMAIN}{r['DestinationUrl']}"
+        art_id = zh_path.rsplit('/', 1)[1]
         zh_detail = requests.get(zh_path)
         if zh_detail.status_code == 200:
             cn_ary = genJSON(zh_detail.text, folderPath)
@@ -51,25 +55,39 @@ for r in j['results']:
         en_detail = requests.get(en_path)
         if en_detail.status_code == 200:
             en_ary = genJSON(en_detail.text, folderPath)
-        if len(en_ary) - len(cn_ary) == 1:
-            en_ary.pop()
-        if len(cn_ary) == len(en_ary) and len(cn_ary) > 1:
-            # special handling: pop last element
-            art_id = zh_path.rsplit('/', 1)[1]
+        else:
+            continue
+
+        if len(en_ary) > 0 and len(cn_ary) > 0:
             cn_ary.pop()
             en_ary.pop()
             output = {
                 'en': en_ary,
                 'cn': cn_ary
             }
-            fullPath = os.path.join(folderPath, art_id + ".json")
-            with open(fullPath, 'w', encoding='utf8') as json_file:
-                json.dump(output, json_file, ensure_ascii=False)
-            print(f"{fullPath} created")
-            success_count += 1
-        else:
-            print(f"{r['DestinationUrl']} discarded")
-            fail_count += 1
+
+            if len(en_ary) != len(cn_ary):
+                output = merge_sentence(output)
+                if len(output['en']) == len(output['cn']):
+                    fullPath = os.path.join(folderPath, art_id + ".json")
+                    with open(fullPath, 'w', encoding='utf8') as json_file:
+                        json.dump(output, json_file, ensure_ascii=False, indent=4)
+                    print(f"{fullPath} created")
+                    success_count += 1
+                else:
+                    fail_count += 1
+                    failed_links.append({
+                        'id': art_id,
+                        'en': en_path,
+                        'cn': zh_path,
+                    })
+            else:
+                fullPath = os.path.join(folderPath, art_id + ".json")
+                with open(fullPath, 'w', encoding='utf8') as json_file:
+                    json.dump(output, json_file, ensure_ascii=False, indent=4)
+                print(f"{fullPath} created")
+                success_count += 1
+
 
 output = {
     'total': success_count + fail_count,
@@ -79,3 +97,5 @@ output = {
 with open(f"{ROOT_FOLDER}_summary.json", 'w', encoding='utf8') as json_file:
     json.dump(output, json_file, ensure_ascii=False, indent=4)
 
+with open(f"{ROOT_FOLDER}_fail_list.json", 'w', encoding='utf8') as json_file:
+    json.dump(failed_links, json_file, ensure_ascii=False, indent=4)

@@ -4,6 +4,7 @@ import json
 import os.path
 from bs4 import BeautifulSoup
 from pathlib import Path
+from laser_checker import merge_sentence
 
 
 ROOT_FOLDER = 'zeal'
@@ -12,6 +13,7 @@ next_article_link = ''
 ### Statistics ###
 success_count = 0
 fail_count = 0
+failed_links = []
 ##################
 
 
@@ -63,19 +65,33 @@ def genJSON(article_link, folderPath, getTotalPage=False):
         if sub_section_cn[-1] == 'Disclaimer | Privacy Policy':
             sub_section_cn.pop()
         cn_ary.append(''.join(sub_section_cn))
-        if len(en_ary) == len(cn_ary):
-            output = {
-                'en': en_ary,
-                'cn': cn_ary
-            }
+
+        output = {
+            'en': en_ary,
+            'cn': cn_ary
+        }
+
+        if len(en_ary) != len(cn_ary):
+            output = merge_sentence(output)
+            if len(output['en']) == len(output['cn']):
+                fullPath = os.path.join(folderPath, art_id + ".json")
+                with open(fullPath, 'w', encoding='utf8') as json_file:
+                    json.dump(output, json_file, ensure_ascii=False, indent=4)
+                print(f"{fullPath} created")
+                success_count += 1
+            else:
+                fail_count += 1
+                failed_links.append({
+                    'id': art_id,
+                    'en': en_url,
+                    'cn': cn_url,
+                })
+        else:
             fullPath = os.path.join(folderPath, art_id + ".json")
             with open(fullPath, 'w', encoding='utf8') as json_file:
                 json.dump(output, json_file, ensure_ascii=False, indent=4)
-            print(f"{art_id} created")
+            print(f"{fullPath} created")
             success_count += 1
-        else:
-            print(f"Length not equal {art_id} en:{len(p_en)} | cn:{len(p_cn)}")
-            fail_count += 1
 
         next_art = en_art_soup.find('a', rel='prev')
         if next_art:
@@ -105,3 +121,6 @@ if index.status_code == 200:
     }
     with open(f"{ROOT_FOLDER}_summary.json", 'w', encoding='utf8') as json_file:
         json.dump(output, json_file, ensure_ascii=False, indent=4)
+
+    with open(f"{ROOT_FOLDER}_fail_list.json", 'w', encoding='utf8') as json_file:
+        json.dump(failed_links, json_file, ensure_ascii=False, indent=4)
