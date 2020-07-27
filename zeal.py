@@ -29,8 +29,6 @@ def genJSON(article_link, folderPath, getTotalPage=False):
     if cn_article.status_code == 200 and en_article.status_code == 200:
         en_ary = []
         cn_ary = []
-        sub_section_en = []
-        sub_section_cn = []
         en_art_soup = BeautifulSoup(en_article.text, 'html.parser')
         cn_art_soup = BeautifulSoup(cn_article.text, 'html.parser')
         en_header = en_art_soup.find('h1', 'entry-title')
@@ -41,30 +39,14 @@ def genJSON(article_link, folderPath, getTotalPage=False):
         cn_ary.append(title_cn)
         p_en = en_art_soup.find_all('p')
         p_cn = cn_art_soup.find_all('p')
-        for i in range(len(p_en)):
-            isTitle = p_en[i].find('strong')
-            if isTitle:
-                if len(sub_section_en) > 0:
-                    en_ary.append(''.join(sub_section_en))
-                    sub_section_en = []
-                en_ary.append(p_en[i].text)
-            else:
-                sub_section_en.append(p_en[i].text)
-        if sub_section_en[-1] == 'Disclaimer | Privacy Policy':
-            sub_section_en.pop()
-        en_ary.append(''.join(sub_section_en))
-        for i in range(len(p_cn)):
-            isTitle = p_cn[i].find('strong')
-            if isTitle:
-                if len(sub_section_cn) > 0:
-                    cn_ary.append(''.join(sub_section_cn))
-                    sub_section_cn = []
-                cn_ary.append(p_cn[i].text)
-            else:
-                sub_section_cn.append(p_cn[i].text)
-        if sub_section_cn[-1] == 'Disclaimer | Privacy Policy':
-            sub_section_cn.pop()
-        cn_ary.append(''.join(sub_section_cn))
+
+        for p in p_en:
+            if p.text != 'Disclaimer | Privacy Policy' and p.text != '' and p.text != '\n' and p.text != '. . .':
+                en_ary.append(p.text)
+
+        for p in p_cn:
+            if p.text != 'Disclaimer | Privacy Policy' and p.text != '' and p.text != '\n' and p.text != '. . .':
+                cn_ary.append(p.text)
 
         output = {
             'en': en_ary,
