@@ -61,7 +61,7 @@ python pimco.py
 Allianzgi
 ```
 node index-allianz.js
-python ubs.py
+python allianz.py
 ```
 
 ## Websites
